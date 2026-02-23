@@ -17,6 +17,8 @@ export async function seedDatabase() {
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `
 
+  // careersData comes from a JSON file with a stable shape; using any here is acceptable for the seeding script
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   for (const career of careersData as Array<{ [key: string]: any }>) {
     await execute(insertSql, [
       career.id,

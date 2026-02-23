@@ -17,18 +17,20 @@ export const db = createClient({
   authToken,
 })
 
+type DbExecuteArgs = Parameters<typeof db.execute>[1]
+
 export async function queryAll<T = unknown>(sql: string, args: unknown[] = []): Promise<T[]> {
-  const result = await db.execute(sql, args as any)
+  const result = await db.execute(sql, args as DbExecuteArgs)
   return result.rows as T[]
 }
 
 export async function queryOne<T = unknown>(sql: string, args: unknown[] = []): Promise<T | undefined> {
-  const result = await db.execute(sql, args as any)
+  const result = await db.execute(sql, args as DbExecuteArgs)
   return (result.rows[0] as T) ?? undefined
 }
 
 export async function execute(sql: string, args: unknown[] = []): Promise<void> {
-  await db.execute(sql, args as any)
+  await db.execute(sql, args as DbExecuteArgs)
 }
 
 export async function initDatabase() {

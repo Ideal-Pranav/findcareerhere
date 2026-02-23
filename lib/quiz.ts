@@ -69,7 +69,7 @@ export async function calculateQuizResults(answers: QuizAnswer[]): Promise<Caree
   // Calculate final scores
   const matches: CareerMatch[] = []
 
-  careerScores.forEach((score) => {
+  for (const score of careerScores.values()) {
     // Normalize category scores (0-1 range)
     const normalizedScores = {
       interests:
@@ -116,7 +116,7 @@ export async function calculateQuizResults(answers: QuizAnswer[]): Promise<Caree
         },
       })
     }
-  })
+  }
 
   // Sort by match percentage and return top 5
   return matches

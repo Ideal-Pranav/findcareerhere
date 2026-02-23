@@ -36,7 +36,7 @@ export async function GET(request: Request) {
 
     query += ' ORDER BY career_option ASC'
 
-    const careers = await queryAll<Array<{ [key: string]: string | number | null }>>(query, params)
+    const careers = await queryAll<{ [key: string]: string | number | null }>(query, params)
 
     // Parse JSON fields
     const parsedCareers = careers.map((career: { [key: string]: string | number | null }) => ({
