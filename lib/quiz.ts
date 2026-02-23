@@ -1,5 +1,5 @@
 import { quizQuestions, QuizAnswer, CareerMatch } from '@/data/quiz-questions'
-import db from './db'
+import { queryOne, execute } from './db'
 
 interface CareerScore {
   careerId: string
@@ -27,7 +27,7 @@ const CATEGORY_WEIGHTS = {
   lifestyle: 0.1,
 }
 
-export function calculateQuizResults(answers: QuizAnswer[]): CareerMatch[] {
+export async function calculateQuizResults(answers: QuizAnswer[]): Promise<CareerMatch[]> {
   const careerScores: Map<string, CareerScore> = new Map()
 
   //Initialize scores for all careers mentioned in questions
@@ -98,7 +98,10 @@ export function calculateQuizResults(answers: QuizAnswer[]): CareerMatch[] {
       normalizedScores.lifestyle * CATEGORY_WEIGHTS.lifestyle
 
     // Get career name from database
-    const career = db.prepare('SELECT career_option FROM careers WHERE id = ?').get(score.careerId) as { career_option: string } | undefined
+    const career = await queryOne<{ career_option: string }>(
+      'SELECT career_option FROM careers WHERE id = ?',
+      [score.careerId]
+    )
 
     if (career) {
       matches.push({
@@ -123,19 +126,22 @@ export function calculateQuizResults(answers: QuizAnswer[]): CareerMatch[] {
 
 import crypto from 'crypto'
 
-export function saveQuizResult(userId: string, answers: QuizAnswer[], results: CareerMatch[]) {
+export async function saveQuizResult(userId: string, answers: QuizAnswer[], results: CareerMatch[]) {
   const id = crypto.randomBytes(16).toString('hex')
   
-  db.prepare(`
+  await execute(
+    `
     INSERT INTO quiz_results (id, user_id, results, answers, score, created_at)
     VALUES (?, ?, ?, ?, ?, ?)
-  `).run(
-    id,
-    userId,
-    JSON.stringify(results),
-    JSON.stringify(answers),
-    JSON.stringify(results[0]?.score || {}),
-    Math.floor(Date.now() / 1000)
+  `,
+    [
+      id,
+      userId,
+      JSON.stringify(results),
+      JSON.stringify(answers),
+      JSON.stringify(results[0]?.score || {}),
+      Math.floor(Date.now() / 1000),
+    ]
   )
 
   return id

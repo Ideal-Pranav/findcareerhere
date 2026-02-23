@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { calculateQuizResults, saveQuizResult } from '@/lib/quiz'
 import { QuizAnswer } from '@/data/quiz-questions'
-import db from '@/lib/db'
+import { queryAll } from '@/lib/db'
 
 // POST /api/quiz - Calculate quiz results
 export async function POST(request: Request) {
@@ -13,10 +13,10 @@ export async function POST(request: Request) {
     }
 
     // Calculate matches
-    const results = calculateQuizResults(answers)
+    const results = await calculateQuizResults(answers)
 
     // Save to database
-    const resultId = saveQuizResult(userId, answers, results)
+    const resultId = await saveQuizResult(userId, answers, results)
 
     return NextResponse.json({
       resultId,
@@ -34,12 +34,15 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const userId = searchParams.get('userId') || 'demo-user'
 
-    const results = db.prepare (`
+    const results = await queryAll(
+      `
       SELECT * FROM quiz_results
       WHERE user_id = ?
       ORDER BY created_at DESC
       LIMIT 10
-    `).all(userId)
+    `,
+      [userId]
+    )
 
     return NextResponse.json(results)
   } catch (error) {

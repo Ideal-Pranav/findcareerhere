@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import db from '@/lib/db'
+import { queryAll } from '@/lib/db'
 
 // GET /api/careers - List all careers with optional filters
 export async function GET(request: Request) {
@@ -36,7 +36,7 @@ export async function GET(request: Request) {
 
     query += ' ORDER BY career_option ASC'
 
-    const careers = db.prepare(query).all(...params) as Array<{ [key: string]: string | number | null }>
+    const careers = await queryAll<Array<{ [key: string]: string | number | null }>>(query, params)
 
     // Parse JSON fields
     const parsedCareers = careers.map((career: { [key: string]: string | number | null }) => ({

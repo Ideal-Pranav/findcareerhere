@@ -1,4 +1,4 @@
-import db from './db'
+import { execute, queryAll } from './db'
 
 type RoadmapStage = {
   stage: string
@@ -262,17 +262,16 @@ export async function seedRoadmaps() {
 
   // Ensure column exists
   try {
-    db.prepare('ALTER TABLE careers ADD COLUMN roadmap TEXT').run()
+    await execute('ALTER TABLE careers ADD COLUMN roadmap TEXT')
     console.log('✅ Added roadmap column to careers table')
   } catch (error) {
-    // Ignore error if column already exists
     const errMsg = error instanceof Error ? error.message : String(error)
     if (!errMsg.includes('duplicate column')) {
-      // console.log('Column probably exists')
+      // ignore other errors for now
     }
   }
 
-  const updateStmt = db.prepare('UPDATE careers SET roadmap = ? WHERE id = ?')
+  const updateSql = 'UPDATE careers SET roadmap = ? WHERE id = ?'
 
   // Using a generic roadmap for others (fallback if no ID or category match)
   const genericRoadmap: RoadmapStage[] = [
@@ -294,16 +293,16 @@ export async function seedRoadmaps() {
 
   // Update specific ones (by exact career ID)
   for (const [id, roadmap] of Object.entries(roadmaps)) {
-    updateStmt.run(JSON.stringify(roadmap), id)
+    await execute(updateSql, [JSON.stringify(roadmap), id])
   }
 
   // Update all others with category-specific or generic roadmap
-  const allCareers = db.prepare('SELECT id, category FROM careers').all() as { id: string; category: string }[]
+  const allCareers = await queryAll<{ id: string; category: string }>('SELECT id, category FROM careers')
   for (const career of allCareers) {
     if (!roadmaps[career.id]) {
       const categoryRoadmap = categoryRoadmaps[career.category]
       const roadmapToUse = categoryRoadmap ?? genericRoadmap
-      updateStmt.run(JSON.stringify(roadmapToUse), career.id)
+      await execute(updateSql, [JSON.stringify(roadmapToUse), career.id])
     }
   }
 

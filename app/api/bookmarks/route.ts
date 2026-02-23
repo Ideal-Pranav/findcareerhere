@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import db from '@/lib/db'
+import { execute, queryAll, queryOne } from '@/lib/db'
 import { randomBytes } from 'crypto'
 
 function generateId() {
@@ -14,7 +14,8 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const userId = searchParams.get('userId') || 'demo-user'
 
-    const bookmarks = db.prepare(`
+    const bookmarks = await queryAll(
+      `
       SELECT 
         b.id,
         b.career_id,
@@ -24,7 +25,9 @@ export async function GET(request: Request) {
       JOIN careers c ON b.career_id = c.id
       WHERE b.user_id = ?
       ORDER BY b.created_at DESC
-    `).all(userId)
+    `,
+      [userId]
+    )
 
     return NextResponse.json(bookmarks)
   } catch (error) {
@@ -43,9 +46,10 @@ export async function POST(request: Request) {
     }
 
     // Check if already bookmarked
-    const existing = db.prepare(
-      'SELECT * FROM bookmarks WHERE user_id = ? AND career_id = ?'
-    ).get(userId, careerId)
+    const existing = await queryOne(
+      'SELECT * FROM bookmarks WHERE user_id = ? AND career_id = ?',
+      [userId, careerId]
+    )
 
     if (existing) {
       return NextResponse.json({ error: 'Already bookmarked' }, { status: 409 })
@@ -53,12 +57,14 @@ export async function POST(request: Request) {
 
     // Insert bookmark
     const id = generateId()
-    db.prepare(
-      'INSERT INTO bookmarks (id, user_id, career_id) VALUES (?, ?, ?)'
-    ).run(id, userId, careerId)
+    await execute(
+      'INSERT INTO bookmarks (id, user_id, career_id) VALUES (?, ?, ?)',
+      [id, userId, careerId]
+    )
 
     // Get the created bookmark with career data
-    const bookmark = db.prepare(`
+    const bookmark = await queryOne(
+      `
       SELECT 
         b.id,
         b.career_id,
@@ -67,7 +73,9 @@ export async function POST(request: Request) {
       FROM bookmarks b
       JOIN careers c ON b.career_id = c.id
       WHERE b.id = ?
-    `).get(id)
+    `,
+      [id]
+    )
 
     return NextResponse.json(bookmark, { status: 201 })
   } catch (error) {
@@ -85,9 +93,10 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'Career ID required' }, { status: 400 })
     }
 
-    db.prepare(
-      'DELETE FROM bookmarks WHERE user_id = ? AND career_id = ?'
-    ).run(userId, careerId)
+   await execute(
+      'DELETE FROM bookmarks WHERE user_id = ? AND career_id = ?',
+      [userId, careerId]
+    )
 
     return NextResponse.json({ success: true })
   } catch (error) {

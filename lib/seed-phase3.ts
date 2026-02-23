@@ -1,4 +1,4 @@
-import db, { initDatabase } from './db'
+import { execute, initDatabase, queryAll } from './db'
 import { randomBytes } from 'crypto'
 
 interface College {
@@ -246,37 +246,57 @@ function generateId() {
 export async function seedPhase3() {
   console.log('🌱 Seeding Phase 3 data (Colleges & Scholarships)...')
 
-  // Drop table to trigger schema update (since migration is handled by initDatabase)
-  db.prepare('DROP TABLE IF EXISTS colleges').run()
+  // Drop tables to trigger schema update (since migration is handled by initDatabase)
+  await execute('DROP TABLE IF EXISTS colleges')
+  await execute('DROP TABLE IF EXISTS scholarships')
   
   // Re-init to create table with new columns
-  initDatabase()
+  await initDatabase()
 
   // Clear scholarships (schema unchanged)
-  db.prepare('DELETE FROM scholarships').run()
+  await execute('DELETE FROM scholarships')
 
   // Insert Colleges
-  const insertCollege = db.prepare(`
+  const insertCollegeSql = `
     INSERT INTO colleges (id, name, location, rating, fees_range, placement_avg, website, image, career_category, admission_process)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `)
+  `
 
   for (const c of colleges) {
-    insertCollege.run(generateId(), c.name, c.location, c.rating, c.fees_range, c.placement_avg, c.website, c.image, c.career_category, c.admission_process)
+    await execute(insertCollegeSql, [
+      generateId(),
+      c.name,
+      c.location,
+      c.rating,
+      c.fees_range,
+      c.placement_avg,
+      c.website,
+      c.image,
+      c.career_category,
+      c.admission_process,
+    ])
   }
 
   // Insert Scholarships
-  const insertScholarship = db.prepare(`
+  const insertScholarshipSql = `
     INSERT INTO scholarships (id, name, provider, amount, eligibility, deadline, category)
     VALUES (?, ?, ?, ?, ?, ?, ?)
-  `)
+  `
 
   for (const s of scholarships) {
-    insertScholarship.run(generateId(), s.name, s.provider, s.amount, s.eligibility, s.deadline, s.category)
+    await execute(insertScholarshipSql, [
+      generateId(),
+      s.name,
+      s.provider,
+      s.amount,
+      s.eligibility,
+      s.deadline,
+      s.category,
+    ])
   }
 
-  const collegeCount = db.prepare('SELECT COUNT(*) as count FROM colleges').get() as { count: number }
-  const scholarshipCount = db.prepare('SELECT COUNT(*) as count FROM scholarships').get() as { count: number }
+  const collegeCount = (await queryAll<{ count: number }>('SELECT COUNT(*) as count FROM colleges'))[0]
+  const scholarshipCount = (await queryAll<{ count: number }>('SELECT COUNT(*) as count FROM scholarships'))[0]
 
   console.log(`✅ Seeded ${collegeCount.count} colleges and ${scholarshipCount.count} scholarships`)
 }

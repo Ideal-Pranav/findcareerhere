@@ -1,16 +1,39 @@
-import Database from 'better-sqlite3'
 import path from 'path'
+import { config } from 'dotenv'
+import { createClient } from '@libsql/client'
 
-const dbPath = path.join(process.cwd(), 'career-finder.db')
-const db = new Database(dbPath)
+// Explicitly load .env from project root for local scripts
+config({ path: path.resolve(process.cwd(), '.env') })
 
-// Enable foreign keys
-db.pragma('foreign_keys = ON')
+const url = process.env.TURSO_DATABASE_URL
+const authToken = process.env.TURSO_AUTH_TOKEN
 
-// Initialize database schema
-export function initDatabase() {
+if (!url) {
+  throw new Error('TURSO_DATABASE_URL is not set')
+}
+
+export const db = createClient({
+  url,
+  authToken,
+})
+
+export async function queryAll<T = unknown>(sql: string, args: unknown[] = []): Promise<T[]> {
+  const result = await db.execute(sql, args as any)
+  return result.rows as T[]
+}
+
+export async function queryOne<T = unknown>(sql: string, args: unknown[] = []): Promise<T | undefined> {
+  const result = await db.execute(sql, args as any)
+  return (result.rows[0] as T) ?? undefined
+}
+
+export async function execute(sql: string, args: unknown[] = []): Promise<void> {
+  await db.execute(sql, args as any)
+}
+
+export async function initDatabase() {
   // Users table
-  db.exec(`
+  await execute(`
     CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY,
       name TEXT,
@@ -22,14 +45,12 @@ export function initDatabase() {
     )
   `)
 
-  // Ensure a default demo user exists for anonymous/demo operations
-  db.exec(`
+  await execute(`
     INSERT OR IGNORE INTO users (id, name, email)
     VALUES ('demo-user', 'Demo User', 'demo-user@example.com')
   `)
 
-  // Careers table
-  db.exec(`
+  await execute(`
     CREATE TABLE IF NOT EXISTS careers (
       id TEXT PRIMARY KEY,
       category TEXT NOT NULL,
@@ -57,8 +78,7 @@ export function initDatabase() {
     )
   `)
 
-  // Colleges table (New for Phase 3)
-  db.exec(`
+  await execute(`
     CREATE TABLE IF NOT EXISTS colleges (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
@@ -74,8 +94,7 @@ export function initDatabase() {
     )
   `)
 
-  // Scholarships table (New for Phase 3)
-  db.exec(`
+  await execute(`
     CREATE TABLE IF NOT EXISTS scholarships (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
@@ -83,13 +102,13 @@ export function initDatabase() {
       amount TEXT NOT NULL,
       eligibility TEXT,
       deadline TEXT,
+      category TEXT,
       max_amount INTEGER,
       created_at INTEGER DEFAULT (strftime('%s', 'now'))
     )
   `)
 
-  // Bookmarks table
-  db.exec(`
+  await execute(`
     CREATE TABLE IF NOT EXISTS bookmarks (
       id TEXT PRIMARY KEY,
       user_id TEXT NOT NULL,
@@ -101,8 +120,7 @@ export function initDatabase() {
     )
   `)
 
-  // Quiz results table
-  db.exec(`
+  await execute(`
     CREATE TABLE IF NOT EXISTS quiz_results (
       id TEXT PRIMARY KEY,
       user_id TEXT NOT NULL,
@@ -114,8 +132,7 @@ export function initDatabase() {
     )
   `)
 
-  // Sessions table (for NextAuth)
-  db.exec(`
+  await execute(`
     CREATE TABLE IF NOT EXISTS sessions (
       id TEXT PRIMARY KEY,
       session_token TEXT UNIQUE NOT NULL,
@@ -125,8 +142,7 @@ export function initDatabase() {
     )
   `)
 
-  // Accounts table (for NextAuth OAuth)
-  db.exec(`
+  await execute(`
     CREATE TABLE IF NOT EXISTS accounts (
       id TEXT PRIMARY KEY,
       user_id TEXT NOT NULL,
@@ -145,8 +161,7 @@ export function initDatabase() {
     )
   `)
 
-  // Verification tokens table
-  db.exec(`
+  await execute(`
     CREATE TABLE IF NOT EXISTS verification_tokens (
       identifier TEXT NOT NULL,
       token TEXT UNIQUE NOT NULL,
@@ -154,11 +169,9 @@ export function initDatabase() {
       UNIQUE(identifier, token)
     )
   `)
-
-  // Log only if tables were just created (silent for now to avoid noise)
 }
 
 // Initialize on import
-initDatabase()
+void initDatabase()
 
 export default db

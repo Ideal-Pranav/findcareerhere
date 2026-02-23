@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import db from '@/lib/db'
+import { queryAll } from '@/lib/db'
 
 // GET /api/scholarships - List scholarships with filters
 export async function GET(request: Request) {
@@ -24,7 +24,7 @@ export async function GET(request: Request) {
 
     query += ' ORDER BY amount DESC'
 
-    const scholarships = db.prepare(query).all(...params)
+    const scholarships = await queryAll(query, params)
 
     return NextResponse.json(scholarships)
   } catch (error) {

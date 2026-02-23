@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import db from '@/lib/db'
+import { queryAll } from '@/lib/db'
 
 // GET /api/colleges - List colleges with filters
 export async function GET(request: Request) {
@@ -30,7 +30,7 @@ export async function GET(request: Request) {
 
     query += ' ORDER BY rating DESC'
 
-    const colleges = db.prepare(query).all(...params)
+    const colleges = await queryAll(query, params)
 
     return NextResponse.json(colleges)
   } catch (error) {
