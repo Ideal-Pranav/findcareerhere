@@ -9,7 +9,7 @@ export async function GET(request: Request) {
     const search = searchParams.get('search')
 
     let query = 'SELECT * FROM scholarships WHERE 1=1'
-    const params: any[] = []
+    const params: (string | number)[] = []
 
     if (category && category !== 'All') {
       query += ' AND category LIKE ?'

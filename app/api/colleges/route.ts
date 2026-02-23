@@ -10,7 +10,7 @@ export async function GET(request: Request) {
     const location = searchParams.get('location')
 
     let query = 'SELECT * FROM colleges WHERE 1=1'
-    const params: any[] = []
+    const params: (string | number)[] = []
 
     if (category && category !== 'All') {
       query += ' AND career_category = ?'

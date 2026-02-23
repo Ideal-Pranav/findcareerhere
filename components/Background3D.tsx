@@ -4,6 +4,7 @@ import { useRef, useState, useEffect } from "react"
 import { Canvas, useFrame } from "@react-three/fiber"
 import { Points, PointMaterial } from "@react-three/drei"
 import { usePathname } from "next/navigation"
+import type { Points as PointsType } from "three"
 
 function generateSphere(count: number, radius: number) {
   const points = new Float32Array(count * 3)
@@ -23,14 +24,18 @@ function generateSphere(count: number, radius: number) {
   return points
 }
 
-function Stars(props: any) {
-  const ref = useRef<any>()
-  const [sphere] = useState(() => generateSphere(1500, 1.2))
+interface StarsProps {
+  [key: string]: unknown
+}
 
-  useFrame((state, delta) => {
+function Stars(props: StarsProps) {
+  const ref = useRef<PointsType>(null)
+  const [sphere] = useState<Float32Array>(() => generateSphere(1500, 1.2))
+
+  useFrame(() => {
     if (ref.current) {
-      ref.current.rotation.x -= delta / 10
-      ref.current.rotation.y -= delta / 15
+      ref.current.rotation.x -= 0.005
+      ref.current.rotation.y -= 0.0067
     }
   })
 

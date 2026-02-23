@@ -1,10 +1,5 @@
 import db from './db'
 import careersData from '../data/careers.json'
-import { randomBytes } from 'crypto'
-
-function generateId() {
-  return randomBytes(16).toString('hex')
-}
 
 export async function seedDatabase() {
   console.log('🌱 Seeding database...')
@@ -22,7 +17,7 @@ export async function seedDatabase() {
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `)
 
-  const insertMany = db.transaction((careers: any[]) => {
+  const insertMany = db.transaction((careers: Array<{ [key: string]: unknown }>) => {
     for (const career of careers) {
       insertCareer.run(
         career.id,

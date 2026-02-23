@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { Sparkles, Scale, LayoutDashboard } from "lucide-react"
+import { Sparkles, LayoutDashboard } from "lucide-react"
 import { ThemeToggle } from "./theme-toggle"
 import { useComparisonStore } from "@/lib/store"
 import Link from "next/link"

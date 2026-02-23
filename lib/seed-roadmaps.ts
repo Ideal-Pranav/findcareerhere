@@ -264,9 +264,10 @@ export async function seedRoadmaps() {
   try {
     db.prepare('ALTER TABLE careers ADD COLUMN roadmap TEXT').run()
     console.log('✅ Added roadmap column to careers table')
-  } catch (error: any) {
+  } catch (error) {
     // Ignore error if column already exists
-    if (!error.message.includes('duplicate column')) {
+    const errMsg = error instanceof Error ? error.message : String(error)
+    if (!errMsg.includes('duplicate column')) {
       // console.log('Column probably exists')
     }
   }

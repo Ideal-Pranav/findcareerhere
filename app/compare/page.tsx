@@ -4,8 +4,8 @@ import { useEffect, useState } from "react"
 import { useComparisonStore } from "@/lib/store"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowRight, Check, Plus, X, Trash2, ArrowLeft } from "lucide-react"
-import { motion } from "framer-motion"
+import { Plus, X, Trash2, ArrowLeft, ArrowRight } from "lucide-react"
+
 import Link from "next/link"
 
 interface CareerData {
@@ -40,17 +40,17 @@ export default function ComparePage() {
       try {
         const fetchedCareers = await Promise.all(
           selectedCareers.map(async (id) => {
-            const res = await fetch(`/api/careers?id=${id}`) // Note: API needs to support single fetch or we filter client side
+            // Note: API needs to support single fetch or we filter client side
             // Ideally we'd have a bulk fetch or single fetch. 
             // For now let's assume we can fetch all and filter or modify API.
             // Actually, existing API is list-based. We can fetch all and find, or fetch individual if we add endpoint.
             // Let's use the list endpoint and filter for now as it's simpler without changing backend yet.
              const allRes = await fetch('/api/careers')
-             const allData = await allRes.json()
-             return allData.find((c: any) => c.id === id)
+             const allData = await allRes.json() as Array<{ [key: string]: unknown }>
+             return allData.find((c: { [key: string]: unknown }) => c.id === id)
           })
         )
-        setCareers(fetchedCareers.filter(Boolean))
+        setCareers((fetchedCareers.filter((c) => c !== undefined) as unknown) as CareerData[])
       } catch (error) {
         console.error("Failed to fetch comparison data", error)
       } finally {

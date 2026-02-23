@@ -1,25 +1,18 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Calculator, IndianRupee, TrendingUp, Building2, Briefcase } from "lucide-react"
+import { Calculator, TrendingUp, Building2, Briefcase } from "lucide-react"
 
 // Simple adjustment factors
 const CITIES = {
   "Tier 1 (Mumbai, Bengaluru, Delhi)": 1.4,
   "Tier 2 (Pune, Hyderabad, Chennai)": 1.2,
   "Tier 3 (Other Cities)": 1.0
-}
-
-const ROLES = {
-  "Entry Level": 1.0,
-  "Mid Level": 1.8,
-  "Senior Level": 3.5,
-  "Lead / Principal": 5.0
 }
 
 const CAREERS = [
@@ -40,11 +33,7 @@ export default function SalaryCalculator() {
   const [city, setCity] = useState("Tier 2 (Pune, Hyderabad, Chennai)")
   const [estimatedSalary, setEstimatedSalary] = useState(0)
 
-  useEffect(() => {
-    calculateSalary()
-  }, [career, experience, city])
-
-  const calculateSalary = () => {
+  const calculateSalary = useCallback(() => {
     const selectedCareer = CAREERS.find(c => c.name === career) || CAREERS[0]
     const base = selectedCareer.base
     
@@ -56,7 +45,12 @@ export default function SalaryCalculator() {
     
     const total = base * expMultiplier * cityMultiplier
     setEstimatedSalary(Math.round(total))
-  }
+  }, [career, experience, city])
+
+  // Call calculateSalary when dependencies change
+  useEffect(() => {
+    calculateSalary()
+  }, [calculateSalary])
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {

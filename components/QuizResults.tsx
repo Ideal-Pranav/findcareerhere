@@ -18,7 +18,7 @@ export function QuizResults({ matches, onRetake }: QuizResultsProps) {
     return (
       <div className="container mx-auto px-4 py-12 max-w-4xl text-center">
         <h2 className="text-2xl font-bold mb-4">No matches found</h2>
-        <p className="mb-4">It seems we couldn't find any career matches based on your answers.</p>
+        <p className="mb-4">It seems we couldn&apos;t find any career matches based on your answers.</p>
         <Button onClick={onRetake}>Retake Quiz</Button>
       </div>
     )

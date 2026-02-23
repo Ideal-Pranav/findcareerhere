@@ -7,7 +7,7 @@ import { CompareButton } from "@/components/CompareButton"
 import { Badge } from "@/components/ui/badge"
 import { Career } from "@/types/career"
 import { formatCurrency } from "@/lib/utils"
-import { ArrowRight, MapPin, Users, Coins, TrendingUp } from "lucide-react"
+import { ArrowRight, TrendingUp } from "lucide-react"
 import { useState } from "react"
 
 interface CareerCardProps {

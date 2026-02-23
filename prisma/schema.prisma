@@ -2,12 +2,14 @@
 // Supports: User Auth, Bookmarks, Quiz, Colleges, Scholarships
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
+  // URL moved to prisma.config.ts for Prisma 7 driver adapters
+  // See https://pris.ly/d/config-datasource
 }
 
 // ============================================

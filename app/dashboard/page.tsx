@@ -6,8 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Bookmark, Clock, Award, ChevronRight, UserCircle, MapPin } from "lucide-react"
-import { Career } from "@/types/career"
+import { Bookmark, Clock, Award, ChevronRight, UserCircle } from "lucide-react"
 import Link from "next/link"
 import { formatCurrency } from "@/lib/utils"
 
@@ -32,7 +31,6 @@ interface QuizResult {
 export default function DashboardPage() {
   const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([])
   const [quizResults, setQuizResults] = useState<QuizResult[]>([])
-  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function fetchData() {
@@ -49,8 +47,6 @@ export default function DashboardPage() {
         setQuizResults(Array.isArray(quizData) ? quizData : [])
       } catch (error) {
         console.error("Failed to fetch dashboard data", error)
-      } finally {
-        setLoading(false)
       }
     }
 

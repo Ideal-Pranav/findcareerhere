@@ -2,14 +2,15 @@
 
 import { motion } from "framer-motion"
 import { useEffect, useState } from "react"
+import * as React from "react"
 
 export function Stats() {
-  const stats = [
+  const stats = React.useMemo(() => [
     { value: 48, label: "Career Options", suffix: "+" },
     { value: 100, label: "Accuracy", suffix: "%" },
     { value: 12, label: "Categories", suffix: "+" },
     { value: 50, label: "Top Colleges", suffix: "+" },
-  ]
+  ], [])
 
   const [counts, setCounts] = useState(stats.map(() => 0))
 
@@ -33,7 +34,7 @@ export function Stats() {
     })
 
     return () => timers.forEach(clearInterval)
-  }, [])
+  }, [stats])
 
   return (
     <section className="py-20 px-4 bg-background">

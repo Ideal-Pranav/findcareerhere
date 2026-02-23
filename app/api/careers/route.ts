@@ -10,7 +10,7 @@ export async function GET(request: Request) {
     const search = searchParams.get('search')
 
     let query = 'SELECT * FROM careers WHERE 1=1'
-    const params: any[] = []
+    const params: (string | number)[] = []
 
     if (category) {
       query += ' AND category = ?'
@@ -36,36 +36,20 @@ export async function GET(request: Request) {
 
     query += ' ORDER BY career_option ASC'
 
-    const careers = db.prepare(query).all(...params)
+    const careers = db.prepare(query).all(...params) as Array<{ [key: string]: string | number | null }>
 
     // Parse JSON fields
-    const parsedCareers = careers.map((career: any) => ({
+    const parsedCareers = careers.map((career: { [key: string]: string | number | null }) => ({
       ...career,
-      skills_required: JSON.parse(career.skills_required || '[]'),
-      top_colleges: JSON.parse(career.top_colleges || '[]'),
-      popular_exams: JSON.parse(career.popular_exams || '[]'),
-      trending_skills: JSON.parse(career.trending_skills || '[]'),
+      skills_required: JSON.parse(String(career.skills_required) || '[]'),
+      top_colleges: JSON.parse(String(career.top_colleges) || '[]'),
+      popular_exams: JSON.parse(String(career.popular_exams) || '[]'),
+      trending_skills: JSON.parse(String(career.trending_skills) || '[]'),
     }))
 
     return NextResponse.json(parsedCareers)
   } catch (error) {
     console.error('Error fetching careers:', error)
     return NextResponse.json({ error: 'Failed to fetch careers' }, { status: 500 })
-  }
-}
-
-// GET /api/careers/[id] - Get single career
-export async function getCareerById(id: string) {
-  const career = db.prepare('SELECT * FROM careers WHERE id = ?').get(id) as any
-
-  if (!career) return null
-
-  // Parse JSON fields
-  return {
-    ...career,
-    skills_required: JSON.parse(career.skills_required || '[]'),
-    top_colleges: JSON.parse(career.top_colleges || '[]'),
-    popular_exams: JSON.parse(career.popular_exams || '[]'),
-    trending_skills: JSON.parse(career.trending_skills || '[]'),
   }
 }

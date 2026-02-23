@@ -121,8 +121,10 @@ export function calculateQuizResults(answers: QuizAnswer[]): CareerMatch[] {
     .slice(0, 5)
 }
 
+import crypto from 'crypto'
+
 export function saveQuizResult(userId: string, answers: QuizAnswer[], results: CareerMatch[]) {
-  const id = require('crypto').randomBytes(16).toString('hex')
+  const id = crypto.randomBytes(16).toString('hex')
   
   db.prepare(`
     INSERT INTO quiz_results (id, user_id, results, answers, score, created_at)
